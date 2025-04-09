@@ -13,13 +13,19 @@ find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS HttpServer)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS HttpServer)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 
 add_executable(AcmeHub
   main.cpp
+  acmedatabase.h acmedatabase.cpp
+  acmehub.h acmehub.cpp
+
 )
 target_link_libraries(AcmeHub
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::HttpServer
+  Qt${QT_VERSION_MAJOR}::Sql
 )
 
 include(GNUInstallDirs)
