@@ -15,7 +15,7 @@ done
 echo Servers: ${SERVERNAMES[*]}
 
 # data insertion loops
-echo -n "Posting data "
+echo -n "Generating data ('.'=success, '!'=failure): "
 for ((DAY=0; DAY<${DAYS}; DAY++))
 do
     for SERVERNAME in "${SERVERNAMES[@]}"
@@ -26,8 +26,7 @@ do
         ENDTIME="$(date -u -d "${STARTDATE} + ${DAY} days $((STARTSECONDS+DURATION)) seconds" +"%Y-%m-%dT%H:%M:%SZ")"
         POSTDATA="{\"server_name\":\"${SERVERNAME}\",\"start_time\":\"${STARTTIME}\",\"end_time\":\"${ENDTIME}\"}"
 
-        echo -n "."
-        curl -s -d "${POSTDATA}" "${URL}"
+        curl -s -d "${POSTDATA}" "${URL}" && echo -n "." || echo -n '!'
     done
 done
 echo
