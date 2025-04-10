@@ -23,7 +23,6 @@ AcmeDatabase::~AcmeDatabase() {
 }
 
 bool AcmeDatabase::InitAcmeDatabase() {
-
     QSqlDatabase sqlDatabase = QSqlDatabase::addDatabase("QSQLITE", "AcmeHubDB");
     sqlDatabase.setDatabaseName("acmehub.db");
 
@@ -35,6 +34,11 @@ bool AcmeDatabase::InitAcmeDatabase() {
     QSqlQuery sqlQuery(sqlDatabase);
     if (!sqlQuery.exec("CREATE TABLE IF NOT EXISTS acmebatchdata(servername TEXT NOT NULL, starttime INTEGER NOT NULL, endtime INTEGER NOT NULL, duration INTEGER)")) {
         qDebug() << Q_FUNC_INFO << "Error: Cannot create tables:" << sqlQuery.lastError().text();
+        return false;
+    }
+
+    if (!sqlQuery.exec("CREATE INDEX IF NOT EXISTS duration_index ON acmebatchdata(duration)")) {
+        qDebug() << Q_FUNC_INFO << "Error: Cannot create index" << sqlQuery.lastError().text();
         return false;
     }
 
