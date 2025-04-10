@@ -1,6 +1,6 @@
 # AcmeHub
 
-A RESTful API backend application for processing times collection.
+A RESTful API backend application for collecting processing time data.
 
 ## Build
 
