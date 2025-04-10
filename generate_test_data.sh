@@ -1,7 +1,7 @@
 #!/bin/bash
 
 URL="http://localhost:4080/process_report"
-SERVERS="16"
+SERVERS="24"
 STARTDATE="2025-01-01"
 DAYS="30"
 DURATION="600"
