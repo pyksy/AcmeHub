@@ -7,17 +7,19 @@
 
 AcmeDatabase::AcmeDatabase()
 {
-    qDebug() << Q_FUNC_INFO;
-    InitAcmeDatabase();
+    //
 }
 
 AcmeDatabase::~AcmeDatabase() {
     qDebug() << Q_FUNC_INFO;
+
     QSqlDatabase::database("AcmeHubDB").close();
     QSqlDatabase::removeDatabase("AcmeHubDB");
 }
 
 bool AcmeDatabase::InitAcmeDatabase() {
+    qDebug() << Q_FUNC_INFO;
+
     QSqlDatabase sqlDatabase = QSqlDatabase::addDatabase("QSQLITE", "AcmeHubDB");
     sqlDatabase.setDatabaseName("acmehub.db");
 
@@ -27,17 +29,33 @@ bool AcmeDatabase::InitAcmeDatabase() {
     }
 
     QSqlQuery sqlQuery(sqlDatabase);
-    if (!sqlQuery.exec("CREATE TABLE IF NOT EXISTS acmebatchdata(servername TEXT, starttime INTEGER, endtime INTEGER)")) {
+    if (!sqlQuery.exec("CREATE TABLE IF NOT EXISTS acmebatchdata(servername TEXT NOT NULL, starttime INTEGER NOT NULL, endtime INTEGER NOT NULL, duration INTEGER)")) {
         qDebug() << Q_FUNC_INFO << "Error: Cannot create tables:" << sqlDatabase.lastError().text();
         return false;
     }
+
     return true;
 }
 
 bool AcmeDatabase::AppendAcmeBatchData(AcmeBatchData &acmeBatchData) {
+    qDebug() << Q_FUNC_INFO;
+
+    QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
+    if (!sqlDatabase.isOpen()) {
+        qDebug() << Q_FUNC_INFO << "Error: Database closed";
+        return false;
+    }
+
     qDebug() << Q_FUNC_INFO << "serverName:" << acmeBatchData.serverName;
     qDebug() << Q_FUNC_INFO << "startTime: " << acmeBatchData.startTime;
     qDebug() << Q_FUNC_INFO << "endTime:   " << acmeBatchData.endTime;
 
-    return true;
+    QSqlQuery sqlQuery(sqlDatabase);
+    sqlQuery.prepare("INSERT INTO acmebatchdata(servername, starttime, endtime, duration) VALUES(:servername, :starttime, :endtime, :duration)");
+    sqlQuery.bindValue(":servername", acmeBatchData.serverName);
+    sqlQuery.bindValue(":starttime", acmeBatchData.startTime);
+    sqlQuery.bindValue(":endtime", acmeBatchData.endTime);
+    sqlQuery.bindValue(":duration", acmeBatchData.startTime.secsTo(acmeBatchData.endTime));
+
+    return sqlQuery.exec();
 }

@@ -13,8 +13,6 @@ public:
 
     bool AppendAcmeBatchData(AcmeBatchData &acmeBatchData);
 
-private:
-
     bool InitAcmeDatabase();
 
 };

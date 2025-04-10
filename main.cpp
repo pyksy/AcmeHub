@@ -14,11 +14,16 @@ int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
     auto acmeDatabase = AcmeDatabase();
+    if (!acmeDatabase.InitAcmeDatabase()) {
+        qInfo() << "Error: Unable to initialize database";
+        return 1;
+    }
 
     QHttpServer httpServer;
     httpServer.route("/",
                      QHttpServerRequest::Method::Get,
                      [] {
+                         qDebug() << "Get /" << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss,zzz");
         return QHttpServerResponse("text/plain",
                                    DEFAULT_HTTP_RESPONSE,
                                    QHttpServerResponder::StatusCode::Ok);
@@ -39,7 +44,8 @@ int main(int argc, char *argv[]) {
                            jsonObject.value("start_time").toString(),
                            jsonObject.value("end_time").toString());
 
-        acmeDatabase.AppendAcmeBatchData(data);
+        bool success = acmeDatabase.AppendAcmeBatchData(data);
+        qDebug() << Q_FUNC_INFO << "success:" << success;
 
         return QHttpServerResponse("application/json",
                                    "",
