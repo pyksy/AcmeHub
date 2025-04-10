@@ -3,7 +3,7 @@
 
 #include <QtSql/QSqlQuery>
 
-#include "acmebatchdatastruct.h"
+#include "acmehubbatchdatastruct.h"
 
 class AcmeHubDatabase
 {

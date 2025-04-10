@@ -6,7 +6,7 @@
 #include <QtMath>
 
 #include "acmehubdatabase.h"
-#include "acmebatchdatastruct.h"
+#include "acmehubbatchdatastruct.h"
 
 #define MINIMUM_ENTRIES 10
 
@@ -61,7 +61,7 @@ bool AcmeHubDatabase::InitAcmeHubDatabase() {
  * Append batch data entries to SQL database
  *
  **/
-bool AcmeHubDatabase::AppendAcmeBatchData(const AcmeBatchData &acmeBatchData) {
+bool AcmeHubDatabase::AppendAcmeBatchData(const AcmeHubBatchData &acmeBatchData) {
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
