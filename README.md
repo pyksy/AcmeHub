@@ -7,7 +7,7 @@ A RESTful API backend for batch process duration collection.
 On Debian 12 (Bookworm), to build:
 
 ```
-sudo apt-get install git cmake g++ qt6-httpserver-dev qt6-websockets-dev
+sudo apt-get install --install-recommends git cmake g++ qt6-httpserver-dev qt6-websockets-dev
 git clone https://github.com/pyksy/AcmeHub.git
 cmake -S AcmeHub -B AcmeHub-Build -DCMAKE_BUILD_TYPE:STRING=Release
 cmake --build AcmeHub-Build --parallel --config Release
@@ -16,10 +16,15 @@ Replace "Release" with "Debug" to get a debug build.
 
 ## Run
 
-Run the binary after build:
+Run the binary:
 
 ```
 AcmeHub-Build/AcmeHub
+```
+
+Note: Runtime dependencies are Qt6 httpserver and sql libraries:
+```
+sudo apt-get install --install-recommends libqt6httpserver6 libqt6sql6
 ```
 
 Optional: Add some test data while the AcmeHub is running:
