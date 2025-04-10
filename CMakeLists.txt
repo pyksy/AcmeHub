@@ -19,9 +19,14 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 add_executable(AcmeHub
   main.cpp
   acmedatabase.h acmedatabase.cpp
-  acmehub.h acmehub.cpp
-
 )
+
+if (${CMAKE_BUILD_TYPE} STREQUAL Release)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC
+        QT_NO_DEBUG_OUTPUT
+        )
+endif()
+
 target_link_libraries(AcmeHub
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::HttpServer
