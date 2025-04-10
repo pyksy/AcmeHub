@@ -17,12 +17,14 @@
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
+    /* Create and init database helper class */
     auto acmeDatabase = AcmeHubDatabase();
     if (!acmeDatabase.InitAcmeHubDatabase()) {
         qInfo() << "Error: Unable to initialize database. No write permission to current dir?";
         return 1;
     }
 
+    /* Create HTTP server and add routes (path handlers) */
     QHttpServer httpServer;
     httpServer.route("/",
                      QHttpServerRequest::Method::Get,
@@ -43,8 +45,8 @@ int main(int argc, char *argv[]) {
         const QJsonObject jsonObject = jsonDocument.object();
 
         AcmeHubBatchData data(jsonObject.value("server_name").toString(),
-                           jsonObject.value("start_time").toString(),
-                           jsonObject.value("end_time").toString());
+                              jsonObject.value("start_time").toString(),
+                              jsonObject.value("end_time").toString());
 
         bool success = acmeDatabase.AppendAcmeBatchData(data);
 
@@ -82,14 +84,15 @@ int main(int argc, char *argv[]) {
         }
     });
 
+    /* Create TCP listen socket */
     auto tcpServer = std::make_unique<QTcpServer>();
-
     if (!tcpServer->listen(QHostAddress(LISTEN_ADDRESS), LISTEN_PORT)) {
         qInfo() << "Error: Cannot bind TCP address" << LISTEN_ADDRESS << "port" << LISTEN_PORT;
         return 1;
     }
 
-    // QtHttpServer::bind() API change in version 6.8.0
+    /* Bind HTTP server to the TCP socket.
+       QHttpServer::bind() API changed in version 6.8.0 */
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     if (!httpServer.bind(tcpServer.get())) {
         qDebug() << Q_FUNC_INFO << "Error: Cannot bind http server to TCP port";
@@ -99,6 +102,7 @@ int main(int argc, char *argv[]) {
     httpServer.bind(tcpServer.get());
 #endif
 
+    /* Print out info and enter application event loop */
     qInfo().noquote() << "Listening for incoming http connections on host" << tcpServer->serverAddress().toString() << "port" << tcpServer->serverPort();
     tcpServer.release();
     return a.exec();

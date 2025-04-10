@@ -8,6 +8,8 @@
 #include "acmehubdatabase.h"
 #include "acmehubbatchdatastruct.h"
 
+/* Minimum required data items required to
+ * provide processing statistics */
 #define MINIMUM_ENTRIES 10
 
 /*
@@ -43,12 +45,12 @@ bool AcmeHubDatabase::InitAcmeHubDatabase() {
         return false;
     }
 
+    /* Create database and index if missing */
     QSqlQuery sqlQuery(sqlDatabase);
     if (!sqlQuery.exec("CREATE TABLE IF NOT EXISTS acmebatchdata(servername TEXT NOT NULL, starttime INTEGER NOT NULL, endtime INTEGER NOT NULL, duration INTEGER)")) {
         qDebug() << Q_FUNC_INFO << "Error: Cannot create tables:" << sqlQuery.lastError().text();
         return false;
     }
-
     if (!sqlQuery.exec("CREATE INDEX IF NOT EXISTS duration_index ON acmebatchdata(duration)")) {
         qDebug() << Q_FUNC_INFO << "Error: Cannot create index" << sqlQuery.lastError().text();
         return false;
@@ -93,6 +95,7 @@ bool AcmeHubDatabase::GetProcessStatistics(QJsonObject &statisticsJson) {
         return false;
     }
 
+    /* Return error JSON if not enough data */
     QSqlQuery sqlQuery(sqlDatabase);
     if (!sqlQuery.exec("SELECT COUNT(servername) FROM acmebatchdata")
         || !sqlQuery.next()
@@ -124,13 +127,14 @@ bool AcmeHubDatabase::GetProcessOutliers(QJsonArray &outliersJson) {
     }
 
     QSqlQuery sqlQuery(sqlDatabase);
-    sqlQuery.setForwardOnly(true);
 
     int meanAverage = GetMeanAverage(sqlQuery);
     int standardDeviation = GetStandardDeviation(sqlQuery);
 
     qDebug() << Q_FUNC_INFO << "mean average:" << meanAverage << "stddev" << standardDeviation;
 
+    /* Fetch outliers, can be optimized with Forward Only flag */
+    sqlQuery.setForwardOnly(true);
     sqlQuery.prepare("SELECT DISTINCT servername FROM acmebatchdata WHERE duration < :lowerbound OR duration > :upperbound");
     sqlQuery.bindValue(":lowerbound", QString::number(-3*standardDeviation + meanAverage));
     sqlQuery.bindValue(":upperbound", QString::number(3*standardDeviation + meanAverage));
@@ -139,6 +143,7 @@ bool AcmeHubDatabase::GetProcessOutliers(QJsonArray &outliersJson) {
         return false;
     }
 
+    /* Append outlier server names to JSON list */
     while(sqlQuery.next()) {
         outliersJson.append(QJsonValue::fromVariant(sqlQuery.value(0).toString()));
     }
@@ -166,13 +171,13 @@ int AcmeHubDatabase::GetMeanAverage(QSqlQuery &sqlQuery) {
  *
  **/
 int AcmeHubDatabase::GetStandardDeviation(QSqlQuery &sqlQuery) {
-    // Get variance
+    /* Get variance */
     if (!sqlQuery.exec("SELECT AVG((acmebatchdata.duration - sub.a) * (acmebatchdata.duration - sub.a)) AS var FROM acmebatchdata, (SELECT AVG(duration) AS a FROM acmebatchdata) AS sub")
         || !sqlQuery.next()) {
         qDebug() << Q_FUNC_INFO << "failed to fetch variance";
         return 0;
     }
 
-    // Square root the variance to return standard deviance
+    /* Square root the variance to return standard deviance */
     return qRound(qSqrt(sqlQuery.value(0).toFloat()));
 }
