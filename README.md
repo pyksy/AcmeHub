@@ -9,7 +9,7 @@ On Debian 12 (Bookworm), to build:
 ```
 sudo apt-get install git cmake g++ qt6-httpserver-dev qt6-websockets-dev
 git clone https://github.com/pyksy/AcmeHub.git
-cmake -S AcmeHub -B AcmeHub-Build
+cmake -S AcmeHub -B AcmeHub-Build -DCMAKE_BUILD_TYPE:STRING=Release
 cmake --build AcmeHub-Build --parallel --config Release
 ```
 Replace "Release" with "Debug" to get a debug build.
