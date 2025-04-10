@@ -10,11 +10,15 @@
 #define LISTEN_ADDRESS "0.0.0.0"
 #define LISTEN_PORT 4080
 
+/*
+ *  main()
+ *
+ **/
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
-    auto acmeDatabase = AcmeDatabase();
-    if (!acmeDatabase.InitAcmeDatabase()) {
+    auto acmeDatabase = AcmeHubDatabase();
+    if (!acmeDatabase.InitAcmeHubDatabase()) {
         qInfo() << "Error: Unable to initialize database. No write permission to current dir?";
         return 1;
     }

@@ -5,17 +5,17 @@
 
 #include "acmebatchdatastruct.h"
 
-class AcmeDatabase
+class AcmeHubDatabase
 {
 public:
 
-    explicit AcmeDatabase();
+    explicit AcmeHubDatabase();
 
-    ~AcmeDatabase();
+    ~AcmeHubDatabase();
 
     bool AppendAcmeBatchData(const AcmeBatchData &acmeBatchData);
 
-    bool InitAcmeDatabase();
+    bool InitAcmeHubDatabase();
 
     bool GetProcessStatistics(QJsonObject &statisticsJson);
 

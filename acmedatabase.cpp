@@ -10,19 +10,31 @@
 
 #define MINIMUM_ENTRIES 10
 
-AcmeDatabase::AcmeDatabase()
+/*
+ * Empty default constructor
+ *
+ **/
+AcmeHubDatabase::AcmeHubDatabase()
 {
     //
 }
 
-AcmeDatabase::~AcmeDatabase() {
+/*
+ * Destuctor, close databases
+ *
+ **/
+AcmeHubDatabase::~AcmeHubDatabase() {
     qDebug() << Q_FUNC_INFO;
 
     QSqlDatabase::database("AcmeHubDB").close();
     QSqlDatabase::removeDatabase("AcmeHubDB");
 }
 
-bool AcmeDatabase::InitAcmeDatabase() {
+/*
+ * Initialize SQL database for later use
+ *
+ **/
+bool AcmeHubDatabase::InitAcmeHubDatabase() {
     QSqlDatabase sqlDatabase = QSqlDatabase::addDatabase("QSQLITE", "AcmeHubDB");
     sqlDatabase.setDatabaseName("acmehub.db");
 
@@ -45,7 +57,11 @@ bool AcmeDatabase::InitAcmeDatabase() {
     return true;
 }
 
-bool AcmeDatabase::AppendAcmeBatchData(const AcmeBatchData &acmeBatchData) {
+/*
+ * Append batch data entries to SQL database
+ *
+ **/
+bool AcmeHubDatabase::AppendAcmeBatchData(const AcmeBatchData &acmeBatchData) {
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
@@ -65,7 +81,11 @@ bool AcmeDatabase::AppendAcmeBatchData(const AcmeBatchData &acmeBatchData) {
     return sqlQuery.exec();
 }
 
-bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsJson) {
+/*
+ * Calculate and return some statistics as JSON
+ *
+ **/
+bool AcmeHubDatabase::GetProcessStatistics(QJsonObject &statisticsJson) {
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
@@ -91,7 +111,11 @@ bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsJson) {
     return true;
 }
 
-bool AcmeDatabase::GetProcessOutliers(QJsonArray &outliersJson) {
+/*
+ * Fetch and return statistically anomalous server names as JSON
+ *
+ **/
+bool AcmeHubDatabase::GetProcessOutliers(QJsonArray &outliersJson) {
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
@@ -123,7 +147,11 @@ bool AcmeDatabase::GetProcessOutliers(QJsonArray &outliersJson) {
     return true;
 }
 
-int AcmeDatabase::GetMeanAverage(QSqlQuery &sqlQuery) {
+/*
+ * Return mean average from data in SQL database
+ *
+ **/
+int AcmeHubDatabase::GetMeanAverage(QSqlQuery &sqlQuery) {
     if (!sqlQuery.exec("SELECT AVG(duration) FROM acmebatchdata")
         || !sqlQuery.next()) {
         qDebug() << Q_FUNC_INFO << "failed to fetch mean average";
@@ -133,7 +161,11 @@ int AcmeDatabase::GetMeanAverage(QSqlQuery &sqlQuery) {
     return sqlQuery.value(0).toInt();
 }
 
-int AcmeDatabase::GetStandardDeviation(QSqlQuery &sqlQuery) {
+/*
+ * Return standard deviation from data in SQL database
+ *
+ **/
+int AcmeHubDatabase::GetStandardDeviation(QSqlQuery &sqlQuery) {
     // Get variance
     if (!sqlQuery.exec("SELECT AVG((acmebatchdata.duration - sub.a) * (acmebatchdata.duration - sub.a)) AS var FROM acmebatchdata, (SELECT AVG(duration) AS a FROM acmebatchdata) AS sub")
         || !sqlQuery.next()) {
