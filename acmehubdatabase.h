@@ -13,7 +13,7 @@ public:
 
     ~AcmeHubDatabase();
 
-    bool AppendAcmeBatchData(const AcmeBatchData &acmeBatchData);
+    bool AppendAcmeBatchData(const AcmeHubBatchData &acmeBatchData);
 
     bool InitAcmeHubDatabase();
 

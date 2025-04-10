@@ -4,14 +4,14 @@
 #include <QString>
 #include <QDateTime>
 
-struct AcmeBatchData {
+struct AcmeHubBatchData {
     QString serverName;
     QDateTime startTime;
     QDateTime endTime;
 
-    AcmeBatchData(const QString &serverName,
-                         const QString &startTime,
-                         const QString &endTime) :
+    AcmeHubBatchData(const QString &serverName,
+                     const QString &startTime,
+                     const QString &endTime) :
         serverName(serverName),
         startTime(QDateTime::fromString(startTime, Qt::ISODate)),
         endTime(QDateTime::fromString(endTime, Qt::ISODate)) {

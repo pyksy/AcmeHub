@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
         const QJsonDocument jsonDocument = QJsonDocument::fromJson(request.body(), &error);
         const QJsonObject jsonObject = jsonDocument.object();
 
-        AcmeBatchData data(jsonObject.value("server_name").toString(),
+        AcmeHubBatchData data(jsonObject.value("server_name").toString(),
                            jsonObject.value("start_time").toString(),
                            jsonObject.value("end_time").toString());
 
