@@ -5,7 +5,7 @@
 #include <QJsonArray>
 #include <QtMath>
 
-#include "acmedatabase.h"
+#include "acmehubdatabase.h"
 #include "acmebatchdatastruct.h"
 
 #define MINIMUM_ENTRIES 10

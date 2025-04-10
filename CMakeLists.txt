@@ -18,7 +18,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 
 add_executable(AcmeHub
   main.cpp
-  acmedatabase.h acmedatabase.cpp
+  acmehubdatabase.h acmehubdatabase.cpp
 )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
