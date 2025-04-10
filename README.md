@@ -27,52 +27,35 @@ Note: Runtime dependencies are Qt6 httpserver and sql libraries:
 sudo apt-get install --install-recommends libqt6httpserver6 libqt6sql6
 ```
 
-Optional: Add some test data while the AcmeHub is running:
+Optional: Generate some test data (with AcmeHub running):
 ```
+sudo apt-get install curl
 bash AcmeHub/generate_test_data.sh
 ```
 
 ## TODO
 
 - Add truckloads of error checking and handling
+- Get rid of magic numbers and hardcoded stuff
 - Add authentication
 - Use proper SQL database, with proper table forms and indices
 - Add unit tests
 - Add CI/CD pipeline with proper test automation
-- Write proper documentation
 - Add cmdline options
 - Add configuration file
+- Write proper documentation
+- ...endless list of other things...
 
-Some *italic* and **bold** text and `inline code`.
+## FAQ
 
-An empty line starts a new paragraph.
+- Q: The code looks ugly. Was this thing created by someone who hasn't written Qt C++ code in over twelve years?
+- A: Yes...
 
-Use two spaces at the end  
-to force a line break.
+- Q: Or coded anything in a real OO programming language in over ten years? Some dubious design choices in there...
+- A: ...
 
-A horizontal ruler follows:
+- Q: Then why bother?
+- A: For personal challenge, to see if I have coding skills left at all.
 
----
-
-Add links inline like [this link to the Qt homepage](https://www.qt.io),
-or with a reference like [this other link to the Qt homepage][1].
-
-    Add code blocks with
-    four spaces at the front.
-
-> A blockquote
-> starts with >
->
-> and has the same paragraph rules as normal text.
-
-First Level Heading in Alternate Style
-======================================
-
-Paragraph.
-
-Second Level Heading in Alternate Style
----------------------------------------
-
-Paragraph.
-
-[1]: https://www.qt.io
+- Q: Was it fun?
+- A: YES!
