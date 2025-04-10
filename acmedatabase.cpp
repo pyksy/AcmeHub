@@ -1,9 +1,13 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
+#include <QJsonObject>
+#include <QtMath>
 
 #include "acmedatabase.h"
 #include "acmebatchdatastruct.h"
+
+#define MINIMUM_ENTRIES 10
 
 AcmeDatabase::AcmeDatabase()
 {
@@ -18,7 +22,6 @@ AcmeDatabase::~AcmeDatabase() {
 }
 
 bool AcmeDatabase::InitAcmeDatabase() {
-    qDebug() << Q_FUNC_INFO;
 
     QSqlDatabase sqlDatabase = QSqlDatabase::addDatabase("QSQLITE", "AcmeHubDB");
     sqlDatabase.setDatabaseName("acmehub.db");
@@ -37,8 +40,7 @@ bool AcmeDatabase::InitAcmeDatabase() {
     return true;
 }
 
-bool AcmeDatabase::AppendAcmeBatchData(AcmeBatchData &acmeBatchData) {
-    qDebug() << Q_FUNC_INFO;
+bool AcmeDatabase::AppendAcmeBatchData(const AcmeBatchData &acmeBatchData) {
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
@@ -61,7 +63,6 @@ bool AcmeDatabase::AppendAcmeBatchData(AcmeBatchData &acmeBatchData) {
 }
 
 bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsObject) {
-    qDebug() << Q_FUNC_INFO;
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
@@ -69,15 +70,33 @@ bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsObject) {
         return false;
     }
 
-    QSqlQuery query(sqlDatabase);
-    if (!query.exec("SELECT COUNT(servername) FROM acmebatchdata")
-        || !query.next()
-        || query.value(0).toInt() < 10) {
-        //
-        qDebug() << Q_FUNC_INFO << "no data";
+    QSqlQuery sqlQuery(sqlDatabase);
+    if (!sqlQuery.exec("SELECT COUNT(servername) FROM acmebatchdata")
+        || !sqlQuery.next()
+        || sqlQuery.value(0).toInt() < MINIMUM_ENTRIES) {
+
+        statisticsObject["error"] = "Not enough reports received.";
+
+        qDebug() << Q_FUNC_INFO << "not enough data";
         return false;
     }
 
-    qDebug() << Q_FUNC_INFO << "next up: get stats";
+    // Get mean averages
+    if (!sqlQuery.exec("SELECT AVG(duration) FROM acmebatchdata")
+        || !sqlQuery.next()) {
+        qDebug() << Q_FUNC_INFO << "failed to fetch mean average";
+        return false;
+    }
+    statisticsObject["mean"] = QString::number(sqlQuery.value(0).toInt());
+
+    // Get standard deviation (by square rooting the variance)
+    if (!sqlQuery.exec("SELECT AVG((acmebatchdata.duration - sub.a) * (acmebatchdata.duration - sub.a)) AS var FROM acmebatchdata, (SELECT AVG(duration) AS a FROM acmebatchdata) AS sub")
+        || !sqlQuery.next()) {
+        qDebug() << Q_FUNC_INFO << "failed to fetch variance";
+    }
+    statisticsObject["stddev"] = QString::number(qRound(qSqrt(sqlQuery.value(0).toFloat())));
+
+    qDebug() << Q_FUNC_INFO << statisticsObject;
+
     return true;
 }

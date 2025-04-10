@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     httpServer.route("/process_report",
                      QHttpServerRequest::Method::Post,
                      [&acmeDatabase](const QHttpServerRequest &request) {
-        qDebug() << Q_FUNC_INFO << "POST /process_report";
+        qInfo() << request.remoteAddress().toString() << "POST /process_report";
         // TODO move json parse to db
         QJsonParseError error;
         const QJsonDocument jsonDocument = QJsonDocument::fromJson(request.body(), &error);
@@ -51,9 +51,8 @@ int main(int argc, char *argv[]) {
 
     httpServer.route("/process_statistics",
                      QHttpServerRequest::Method::Get,
-                     [&acmeDatabase]() {
-        qDebug() << Q_FUNC_INFO << "GET /process_statistics";
-
+                     [&acmeDatabase](const QHttpServerRequest &request) {
+        qInfo().noquote() << request.remoteAddress().toString() << "GET /process_statistics";
         auto statisticsJson = QJsonObject();
 
         if (acmeDatabase.GetProcessStatistics(statisticsJson)) {
@@ -72,7 +71,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // bind() in QtHttpServer API changes from void to int in version 6.8.0
+    // QtHttpServer::bind() API change in version 6.8.0
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     if (!httpServer.bind(tcpServer.get())) {
         qDebug() << Q_FUNC_INFO << "Error: Cannot bind http server to TCP port";
@@ -82,8 +81,7 @@ int main(int argc, char *argv[]) {
     httpServer.bind(tcpServer.get());
 #endif
 
+    qInfo().noquote() << "Listening for incoming http connections on host" << tcpServer->serverAddress().toString() << "port" << tcpServer->serverPort();
     tcpServer.release();
-
-    qInfo() << "Listening for incoming http connections on host" << LISTEN_ADDRESS << "port" << LISTEN_PORT;
     return a.exec();
 }

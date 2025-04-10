@@ -11,7 +11,7 @@ public:
 
     ~AcmeDatabase();
 
-    bool AppendAcmeBatchData(AcmeBatchData &acmeBatchData);
+    bool AppendAcmeBatchData(const AcmeBatchData &acmeBatchData);
 
     bool InitAcmeDatabase();
 
