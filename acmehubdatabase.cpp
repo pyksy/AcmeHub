@@ -4,9 +4,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QtMath>
+#include <QDateTime>
 
 #include "acmehubdatabase.h"
-#include "acmehubbatchdatastruct.h"
 
 /* Minimum required data items required to
  * provide processing statistics */
@@ -63,7 +63,7 @@ bool AcmeHubDatabase::InitAcmeHubDatabase() {
  * Append batch data entries to SQL database
  *
  **/
-bool AcmeHubDatabase::AppendAcmeBatchData(const AcmeHubBatchData &acmeBatchData) {
+bool AcmeHubDatabase::AppendAcmeBatchData(const QJsonObject &jsonObject) {
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
@@ -71,14 +71,17 @@ bool AcmeHubDatabase::AppendAcmeBatchData(const AcmeHubBatchData &acmeBatchData)
         return false;
     }
 
-    qDebug() << Q_FUNC_INFO << "serverName:" << acmeBatchData.serverName << "startTime:" << acmeBatchData.startTime << "endTime:" << acmeBatchData.endTime;
+    QString serverName(jsonObject.value("server_name").toString());
+    QDateTime startTime = QDateTime::fromString(jsonObject.value("start_time").toString(), Qt::ISODate);
+    QDateTime endTime = QDateTime::fromString(jsonObject.value("end_time").toString(), Qt::ISODate);
+    qDebug() << Q_FUNC_INFO << "serverName:" << serverName << "startTime:" << startTime << "endTime:" << endTime << "duration:" << startTime.secsTo(endTime);
 
     QSqlQuery sqlQuery(sqlDatabase);
     sqlQuery.prepare("INSERT INTO acmebatchdata(servername, starttime, endtime, duration) VALUES(:servername, :starttime, :endtime, :duration)");
-    sqlQuery.bindValue(":servername", acmeBatchData.serverName);
-    sqlQuery.bindValue(":starttime", acmeBatchData.startTime);
-    sqlQuery.bindValue(":endtime", acmeBatchData.endTime);
-    sqlQuery.bindValue(":duration", acmeBatchData.startTime.secsTo(acmeBatchData.endTime));
+    sqlQuery.bindValue(":servername", serverName);
+    sqlQuery.bindValue(":starttime", startTime);
+    sqlQuery.bindValue(":endtime", endTime);
+    sqlQuery.bindValue(":duration", startTime.secsTo(endTime));
 
     return sqlQuery.exec();
 }

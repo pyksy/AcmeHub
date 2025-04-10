@@ -39,16 +39,12 @@ int main(int argc, char *argv[]) {
                      QHttpServerRequest::Method::Post,
                      [&acmeDatabase](const QHttpServerRequest &request) {
         qInfo().noquote() << request.remoteAddress().toString() << "POST /process_report";
-        // TODO move json parse to db
         QJsonParseError error;
         const QJsonDocument jsonDocument = QJsonDocument::fromJson(request.body(), &error);
         const QJsonObject jsonObject = jsonDocument.object();
 
-        AcmeHubBatchData data(jsonObject.value("server_name").toString(),
-                              jsonObject.value("start_time").toString(),
-                              jsonObject.value("end_time").toString());
-
-        bool success = acmeDatabase.AppendAcmeBatchData(data);
+        /* Result ignored for now */
+        bool success = acmeDatabase.AppendAcmeBatchData(jsonObject);
 
         return QHttpServerResponse(QJsonObject(),
                                    QHttpServerResponder::StatusCode::Ok);

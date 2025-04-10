@@ -3,8 +3,6 @@
 
 #include <QtSql/QSqlQuery>
 
-#include "acmehubbatchdatastruct.h"
-
 class AcmeHubDatabase
 {
 public:
@@ -13,7 +11,7 @@ public:
 
     ~AcmeHubDatabase();
 
-    bool AppendAcmeBatchData(const AcmeHubBatchData &acmeBatchData);
+    bool AppendAcmeBatchData(const QJsonObject &jsonObject);
 
     bool InitAcmeHubDatabase();
 
