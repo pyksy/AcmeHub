@@ -4,7 +4,7 @@ A RESTful API backend application for batch processing times collection.
 
 ## Build
 
-To build on Debian 12 (Bookworm), run:
+To build on Debian/Ubuntu, run:
 
 ```
 sudo apt-get install --install-recommends git cmake g++ qt6-httpserver-dev qt6-websockets-dev
@@ -14,6 +14,8 @@ cmake --build AcmeHub-Build --parallel --config Release
 ```
 Replace "Release" with "Debug" to get a debug build.
 
+Tested on Debian 12 (Bookworm) and Ubuntu 24.04 (Noble Nubmat).
+
 ## Run
 
 Run the binary:
@@ -22,16 +24,17 @@ Run the binary:
 AcmeHub-Build/AcmeHub
 ```
 
-The runtime dependencies are Qt6 with httpserver and sql libraries:
-```
-sudo apt-get install --install-recommends libqt6httpserver6 libqt6sql6
-```
-
 Optional: Generate some test data (must have the binary running):
 ```
 sudo apt-get install curl
 bash AcmeHub/generate_test_data.sh
 ```
+
+FYI: The runtime dependencies are Qt6 with httpserver and sql libraries:
+```
+sudo apt-get install --install-recommends libqt6httpserver6 libqt6sql6
+```
+
 
 ## Use
 
