@@ -11,9 +11,9 @@ public:
 
     ~AcmeHubDatabase();
 
-    bool AppendAcmeBatchData(const QJsonObject &jsonObject);
-
     bool InitAcmeHubDatabase();
+
+    bool AppendAcmeBatchData(const QJsonObject &jsonObject);
 
     bool GetProcessStatistics(QJsonObject &statisticsJson);
 
