@@ -23,6 +23,7 @@ Run the binary:
 ```
 AcmeHub-Build/AcmeHub
 ```
+Hit CTRL-C to exit.
 
 Optional: Generate some test data (must have the binary running):
 ```
