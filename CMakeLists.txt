@@ -24,7 +24,7 @@ add_executable(AcmeHub
 string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
 if (build_type STREQUAL release)
   target_compile_definitions(AcmeHub PUBLIC
-  QT_NO_DEBUG_OUTPUT
+    QT_NO_DEBUG_OUTPUT
   )
 endif()
 
