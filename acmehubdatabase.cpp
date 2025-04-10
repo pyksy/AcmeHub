@@ -104,7 +104,7 @@ bool AcmeHubDatabase::GetProcessStatistics(QJsonObject &statisticsJson) {
         || !sqlQuery.next()
         || sqlQuery.value(0).toInt() < MINIMUM_ENTRIES) {
 
-        statisticsJson["error"] = "Not enough reports received.";
+        statisticsJson["error"] = "Not enough reports received";
 
         qDebug() << Q_FUNC_INFO << "not enough data";
         return false;
