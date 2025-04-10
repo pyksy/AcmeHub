@@ -2,6 +2,7 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QtMath>
 
 #include "acmedatabase.h"
@@ -48,9 +49,7 @@ bool AcmeDatabase::AppendAcmeBatchData(const AcmeBatchData &acmeBatchData) {
         return false;
     }
 
-    qDebug() << Q_FUNC_INFO << "serverName:" << acmeBatchData.serverName;
-    qDebug() << Q_FUNC_INFO << "startTime: " << acmeBatchData.startTime;
-    qDebug() << Q_FUNC_INFO << "endTime:   " << acmeBatchData.endTime;
+    qDebug() << Q_FUNC_INFO << "serverName:" << acmeBatchData.serverName << "startTime:" << acmeBatchData.startTime << "endTime:" << acmeBatchData.endTime;
 
     QSqlQuery sqlQuery(sqlDatabase);
     sqlQuery.prepare("INSERT INTO acmebatchdata(servername, starttime, endtime, duration) VALUES(:servername, :starttime, :endtime, :duration)");
@@ -62,7 +61,7 @@ bool AcmeDatabase::AppendAcmeBatchData(const AcmeBatchData &acmeBatchData) {
     return sqlQuery.exec();
 }
 
-bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsObject) {
+bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsJson) {
 
     QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
     if (!sqlDatabase.isOpen()) {
@@ -75,28 +74,69 @@ bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsObject) {
         || !sqlQuery.next()
         || sqlQuery.value(0).toInt() < MINIMUM_ENTRIES) {
 
-        statisticsObject["error"] = "Not enough reports received.";
+        statisticsJson["error"] = "Not enough reports received.";
 
         qDebug() << Q_FUNC_INFO << "not enough data";
         return false;
     }
 
-    // Get mean averages
+    statisticsJson["mean"] = QString::number(GetMeanAverage(sqlQuery));
+    statisticsJson["stddev"] = QString::number(GetStandardDeviation(sqlQuery));
+
+    qDebug() << Q_FUNC_INFO << statisticsJson;
+    return true;
+}
+
+bool AcmeDatabase::GetProcessOutliers(QJsonArray &outliersJson) {
+
+    QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
+    if (!sqlDatabase.isOpen()) {
+        qDebug() << Q_FUNC_INFO << "Error: Database closed";
+        return false;
+    }
+
+    QSqlQuery sqlQuery(sqlDatabase);
+    sqlQuery.setForwardOnly(true);
+
+    int meanAverage = GetMeanAverage(sqlQuery);
+    int standardDeviation = GetStandardDeviation(sqlQuery);
+
+    qDebug() << Q_FUNC_INFO << "mean average:" << meanAverage << "stddev" << standardDeviation;
+
+    sqlQuery.prepare("SELECT DISTINCT servername FROM acmebatchdata WHERE duration < :lowerbound OR duration > :upperbound");
+    sqlQuery.bindValue(":lowerbound", QString::number(-3*standardDeviation + meanAverage));
+    sqlQuery.bindValue(":upperbound", QString::number(3*standardDeviation + meanAverage));
+    if (!sqlQuery.exec()) {
+        qDebug() << Q_FUNC_INFO << "query failed";
+        return false;
+    }
+
+    while(sqlQuery.next()) {
+        outliersJson.append(QJsonValue::fromVariant(sqlQuery.value(0).toString()));
+    }
+
+    qDebug() << Q_FUNC_INFO << outliersJson;
+    return true;
+}
+
+int AcmeDatabase::GetMeanAverage(QSqlQuery &sqlQuery) {
     if (!sqlQuery.exec("SELECT AVG(duration) FROM acmebatchdata")
         || !sqlQuery.next()) {
         qDebug() << Q_FUNC_INFO << "failed to fetch mean average";
-        return false;
+        return 0;
     }
-    statisticsObject["mean"] = QString::number(sqlQuery.value(0).toInt());
 
-    // Get standard deviation (by square rooting the variance)
+    return sqlQuery.value(0).toInt();
+}
+
+int AcmeDatabase::GetStandardDeviation(QSqlQuery &sqlQuery) {
+    // Get variance
     if (!sqlQuery.exec("SELECT AVG((acmebatchdata.duration - sub.a) * (acmebatchdata.duration - sub.a)) AS var FROM acmebatchdata, (SELECT AVG(duration) AS a FROM acmebatchdata) AS sub")
         || !sqlQuery.next()) {
         qDebug() << Q_FUNC_INFO << "failed to fetch variance";
+        return 0;
     }
-    statisticsObject["stddev"] = QString::number(qRound(qSqrt(sqlQuery.value(0).toFloat())));
 
-    qDebug() << Q_FUNC_INFO << statisticsObject;
-
-    return true;
+    // Square root the variance to return standard deviance
+    return qRound(qSqrt(sqlQuery.value(0).toFloat()));
 }

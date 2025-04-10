@@ -3,6 +3,7 @@
 #include <QTcpServer>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 
 #include "acmedatabase.h"
 
@@ -31,7 +32,7 @@ int main(int argc, char *argv[]) {
     httpServer.route("/process_report",
                      QHttpServerRequest::Method::Post,
                      [&acmeDatabase](const QHttpServerRequest &request) {
-        qInfo() << request.remoteAddress().toString() << "POST /process_report";
+        qInfo().noquote() << request.remoteAddress().toString() << "POST /process_report";
         // TODO move json parse to db
         QJsonParseError error;
         const QJsonDocument jsonDocument = QJsonDocument::fromJson(request.body(), &error);
@@ -42,10 +43,8 @@ int main(int argc, char *argv[]) {
                            jsonObject.value("end_time").toString());
 
         bool success = acmeDatabase.AppendAcmeBatchData(data);
-        qDebug() << Q_FUNC_INFO << "append data success:" << success;
 
-        return QHttpServerResponse("application/json",
-                                   "",
+        return QHttpServerResponse(QJsonObject(),
                                    QHttpServerResponder::StatusCode::Ok);
     });
 
@@ -60,6 +59,21 @@ int main(int argc, char *argv[]) {
                                        QHttpServerResponder::StatusCode::Ok);
         } else {
             return QHttpServerResponse(statisticsJson,
+                                       QHttpServerResponder::StatusCode::InternalServerError);
+        }
+    });
+
+    httpServer.route("/process_outliers",
+                     QHttpServerRequest::Method::Get,
+                     [&acmeDatabase](const QHttpServerRequest &request) {
+        qInfo().noquote() << request.remoteAddress().toString() << "GET /process_outliers";
+        auto outliersJson = QJsonArray();
+
+        if (acmeDatabase.GetProcessOutliers(outliersJson)) {
+            return QHttpServerResponse(outliersJson,
+                                       QHttpServerResponder::StatusCode::Ok);
+        } else {
+            return QHttpServerResponse(outliersJson,
                                        QHttpServerResponder::StatusCode::InternalServerError);
         }
     });
