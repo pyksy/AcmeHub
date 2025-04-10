@@ -15,6 +15,11 @@ public:
 
     bool InitAcmeDatabase();
 
+    bool GetProcessStatistics(QJsonObject &statisticsObject);
+
+private:
+
+    int GetMeanAverate(QString &);
 };
 
 #endif // ACMEDATABASE_H

@@ -8,14 +8,13 @@
 
 #define LISTEN_ADDRESS "0.0.0.0"
 #define LISTEN_PORT 4080
-#define DEFAULT_HTTP_RESPONSE "The AcmeHub batch data collector is up and running. Please consult the AcmeHub README.md for API usage. Have a nice day! :)\n"
 
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
     auto acmeDatabase = AcmeDatabase();
     if (!acmeDatabase.InitAcmeDatabase()) {
-        qInfo() << "Error: Unable to initialize database";
+        qInfo() << "Error: Unable to initialize database. No write permission to current dir?";
         return 1;
     }
 
@@ -23,29 +22,27 @@ int main(int argc, char *argv[]) {
     httpServer.route("/",
                      QHttpServerRequest::Method::Get,
                      [] {
-                         qDebug() << "Get /" << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss,zzz");
+        qDebug() << Q_FUNC_INFO << "GET /";
         return QHttpServerResponse("text/plain",
-                                   DEFAULT_HTTP_RESPONSE,
+                                   "Please consult the AcmeHub README.md for API usage.\n",
                                    QHttpServerResponder::StatusCode::Ok);
     });
 
     httpServer.route("/process_report",
                      QHttpServerRequest::Method::Post,
                      [&acmeDatabase](const QHttpServerRequest &request) {
+        qDebug() << Q_FUNC_INFO << "POST /process_report";
+        // TODO move json parse to db
         QJsonParseError error;
         const QJsonDocument jsonDocument = QJsonDocument::fromJson(request.body(), &error);
         const QJsonObject jsonObject = jsonDocument.object();
-
-        qDebug() << Q_FUNC_INFO << "serverName:" << jsonObject.value("server_name").toString();
-        qDebug() << Q_FUNC_INFO << "startTime: " << jsonObject.value("start_time").toString();
-        qDebug() << Q_FUNC_INFO << "endTime:   " << jsonObject.value("end_time").toString();
 
         AcmeBatchData data(jsonObject.value("server_name").toString(),
                            jsonObject.value("start_time").toString(),
                            jsonObject.value("end_time").toString());
 
         bool success = acmeDatabase.AppendAcmeBatchData(data);
-        qDebug() << Q_FUNC_INFO << "success:" << success;
+        qDebug() << Q_FUNC_INFO << "append data success:" << success;
 
         return QHttpServerResponse("application/json",
                                    "",
@@ -54,10 +51,18 @@ int main(int argc, char *argv[]) {
 
     httpServer.route("/process_statistics",
                      QHttpServerRequest::Method::Get,
-                     []() {
-        return QHttpServerResponse("application/json",
-                                   "",
-                                   QHttpServerResponder::StatusCode::InternalServerError);
+                     [&acmeDatabase]() {
+        qDebug() << Q_FUNC_INFO << "GET /process_statistics";
+
+        auto statisticsJson = QJsonObject();
+
+        if (acmeDatabase.GetProcessStatistics(statisticsJson)) {
+            return QHttpServerResponse(statisticsJson,
+                                       QHttpServerResponder::StatusCode::Ok);
+        } else {
+            return QHttpServerResponse(statisticsJson,
+                                       QHttpServerResponder::StatusCode::InternalServerError);
+        }
     });
 
     auto tcpServer = std::make_unique<QTcpServer>();

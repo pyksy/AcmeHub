@@ -30,7 +30,7 @@ bool AcmeDatabase::InitAcmeDatabase() {
 
     QSqlQuery sqlQuery(sqlDatabase);
     if (!sqlQuery.exec("CREATE TABLE IF NOT EXISTS acmebatchdata(servername TEXT NOT NULL, starttime INTEGER NOT NULL, endtime INTEGER NOT NULL, duration INTEGER)")) {
-        qDebug() << Q_FUNC_INFO << "Error: Cannot create tables:" << sqlDatabase.lastError().text();
+        qDebug() << Q_FUNC_INFO << "Error: Cannot create tables:" << sqlQuery.lastError().text();
         return false;
     }
 
@@ -58,4 +58,26 @@ bool AcmeDatabase::AppendAcmeBatchData(AcmeBatchData &acmeBatchData) {
     sqlQuery.bindValue(":duration", acmeBatchData.startTime.secsTo(acmeBatchData.endTime));
 
     return sqlQuery.exec();
+}
+
+bool AcmeDatabase::GetProcessStatistics(QJsonObject &statisticsObject) {
+    qDebug() << Q_FUNC_INFO;
+
+    QSqlDatabase sqlDatabase = QSqlDatabase::database("AcmeHubDB");
+    if (!sqlDatabase.isOpen()) {
+        qDebug() << Q_FUNC_INFO << "Error: Database closed";
+        return false;
+    }
+
+    QSqlQuery query(sqlDatabase);
+    if (!query.exec("SELECT COUNT(servername) FROM acmebatchdata")
+        || !query.next()
+        || query.value(0).toInt() < 10) {
+        //
+        qDebug() << Q_FUNC_INFO << "no data";
+        return false;
+    }
+
+    qDebug() << Q_FUNC_INFO << "next up: get stats";
+    return true;
 }

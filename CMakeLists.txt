@@ -21,10 +21,11 @@ add_executable(AcmeHub
   acmedatabase.h acmedatabase.cpp
 )
 
-if (${CMAKE_BUILD_TYPE} STREQUAL Release)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC
-        QT_NO_DEBUG_OUTPUT
-        )
+string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
+if (build_type STREQUAL release)
+  target_compile_definitions(AcmeHub PUBLIC
+  QT_NO_DEBUG_OUTPUT
+  )
 endif()
 
 target_link_libraries(AcmeHub
